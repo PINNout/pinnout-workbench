@@ -21,12 +21,13 @@ for pkg in ${cross.gcc} ${cross.binutils}; do
 done
 '';
 
-
     in with pkgs; {
       devShells.${system} = rec {
         default = mkShell {
           buildInputs = [
-            python312
+            (pkgs.python312.withPackages (ps: with ps; [
+              numpy prettytable pyelftools rich six pexpect psutil typing-extensions pyyaml protobuf
+            ]))
             verilator
             cross.gcc
             cross.binutils
@@ -35,6 +36,12 @@ done
             rustc
             git
             ccache
+            pkg-config
+            SDL2
+            SDL2_ttf
+            libsndfile
+            rsync
+            zlib
           ];
           hardeningDisable = [ "all" ];
           shellHook = ''
