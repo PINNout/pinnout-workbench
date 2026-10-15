@@ -3,12 +3,14 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-26.05";
   };
 
-  outputs = { nixpkgs, ... }:
+  outputs = { nixpkgs, nixpkgs-stable, ... }:
     let
       system = "x86_64-linux"; # devlopment system architecture
       pkgs = nixpkgs.legacyPackages.${system};
+      pkgsStable = nixpkgs-stable.legacyPackages.${system};
 
       cross = pkgs.pkgsCross.riscv64-embedded.buildPackages;
 
@@ -42,11 +44,15 @@ done
             libsndfile
             rsync
             zlib
+            lz4
+            pkgsStable.bender
           ];
           hardeningDisable = [ "all" ];
           shellHook = ''
 export MAGIA_RTL_DIR="$(git rev-parse --show-toplevel)/MAGIA"
 export MAKEFLAGS="SHELL=${pkgs.bash}/bin/bash"
+export NIX_ENFORCE_NO_NATIVE=0
+unset OBJCOPY OBJDUMP
 '';
         };
       };
