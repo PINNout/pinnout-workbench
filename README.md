@@ -9,9 +9,10 @@ This environment is optimised to be used with Nix.
 ### Nix setup [Skip if you already have Flakes enabled] 
 This section will focus on setting up Nix for Ubuntu.
 
-> Note for WSL:
+> **Note for WSL:**
 >
 > Make sure you are using WSL 2, not WSL 1. `wsl -l -v` will show the version.
+>
 > The Nix daemon requires systemd. In Ubuntu, edit `/etc/wsl.conf` with root privileges and add:
 > ```
 > [boot]
@@ -65,7 +66,12 @@ If you need to make any changes to the environment settings, or the configuratio
 Changing the parameters in this file requires building both the simulators and the binaries.
 
 ## Verifying it works
+To verify the environemnt is setup correctly and the simulators are behaving properly. Run from the project root:
+```bash
+scripts/verify_setup.sh
+```
 
+This will run the same basic "Hello world" test on both simulators and compare that the outputs match.
 
 ## Known Limitations
 The ISA is temporarily reduced to omit `xcvhwlp`, `xcvmem` and `xcvbitmap` as the riscv64 gcc toolchain doesn't fully support these by default. 
