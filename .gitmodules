@@ -1,7 +1,7 @@
 [submodule "magia-sdk"]
 	path = magia-sdk
-	url = https://github.com/PINNacle-RISCV/magia-sdk.git
+	url = https://github.com/PINNout/magia-sdk.git
 	branch = wip-reduced-isa
 [submodule "MAGIA"]
 	path = MAGIA
-	url = https://github.com/PINNacle-RISCV/MAGIA.git
+	url = https://github.com/PINNout/MAGIA.git

@@ -1,5 +1,5 @@
 {
-  description = "PINNacle encapsulated environment for compiler and hardware development for PINN training optimisation targeted at the MAGIA platform";
+  description = "PINNout encapsulated environment for compiler and hardware development for PINN training optimisation targeted at the MAGIA platform";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
@@ -45,6 +45,7 @@ done
             rsync
             zlib
             lz4
+            shellcheck
             pkgsStable.bender
           ];
           hardeningDisable = [ "all" ];
