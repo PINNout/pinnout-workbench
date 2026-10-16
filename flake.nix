@@ -54,6 +54,7 @@ export MAGIA_RTL_DIR="$(git rev-parse --show-toplevel)/MAGIA"
 export MAKEFLAGS="SHELL=${pkgs.bash}/bin/bash"
 export NIX_ENFORCE_NO_NATIVE=0
 unset OBJCOPY OBJDUMP
+"$(git rev-parse --show-toplevel)/scripts/setup_env.sh" || true
 '';
         };
       };
