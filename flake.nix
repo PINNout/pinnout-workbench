@@ -14,6 +14,38 @@
 
       cross = pkgs.pkgsCross.riscv64-embedded.buildPackages;
 
+      basePackages = with pkgs; [
+        verilator
+        cross.gcc
+        cross.binutils
+        riscvAliases
+        cmake
+        rustc
+        git
+        ccache
+        pkg-config
+        SDL2
+        SDL2_ttf
+        libsndfile
+        rsync
+        zlib
+        lz4
+        shellcheck
+        pkgsStable.bender];
+
+      basePython = ps: [
+        ps.numpy ps.prettytable ps.pyelftools ps.rich ps.six
+        ps.pexpect ps.psutil ps.typing-extensions ps.pyyaml ps.protobuf
+      ];
+
+      commonHook = ''
+export MAGIA_RTL_DIR="$(git rev-parse --show-toplevel)/MAGIA"
+export MAKEFLAGS="SHELL=${pkgs.bash}/bin/bash"
+export NIX_ENFORCE_NO_NATIVE=0
+unset OBJCOPY OBJDUMP
+"$(git rev-parse --show-toplevel)/scripts/setup_env.sh"
+'';
+
       riscvAliases = pkgs.runCommand "riscv64-unknown-elf-aliases" {} ''
 mkdir -p $out/bin
 for pkg in ${cross.gcc} ${cross.binutils}; do
@@ -26,36 +58,9 @@ done
     in with pkgs; {
       devShells.${system} = rec {
         default = mkShell {
-          buildInputs = [
-            (pkgs.python312.withPackages (ps: with ps; [
-              numpy prettytable pyelftools rich six pexpect psutil typing-extensions pyyaml protobuf
-            ]))
-            verilator
-            cross.gcc
-            cross.binutils
-            riscvAliases
-            cmake
-            rustc
-            git
-            ccache
-            pkg-config
-            SDL2
-            SDL2_ttf
-            libsndfile
-            rsync
-            zlib
-            lz4
-            shellcheck
-            pkgsStable.bender
-          ];
+          packages = basePackages ++ [ (python312.withPackages basePython) ];
           hardeningDisable = [ "all" ];
-          shellHook = ''
-export MAGIA_RTL_DIR="$(git rev-parse --show-toplevel)/MAGIA"
-export MAKEFLAGS="SHELL=${pkgs.bash}/bin/bash"
-export NIX_ENFORCE_NO_NATIVE=0
-unset OBJCOPY OBJDUMP
-"$(git rev-parse --show-toplevel)/scripts/setup_env.sh" || true
-'';
+          shellHook = commonHook;
         };
       };
     };
