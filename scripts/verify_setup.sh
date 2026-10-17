@@ -94,7 +94,7 @@ if [ "$verilator_passes" -eq 2 ] && [ "$gvsoc_passes" -eq 2 ]; then
 fi
 
 if [ "$failed" -ne 1 ]; then
-    printf "\n|||   ALL CHECKS PASSED   ||||\n"
+    printf "\n|||   ALL CHECKS PASSED!   |||\n"
 fi
 
 exit "$failed"

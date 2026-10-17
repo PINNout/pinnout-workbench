@@ -7,6 +7,10 @@
   };
 
   outputs = { nixpkgs, nixpkgs-stable, ... }:
+
+    # ----------------------------------------
+    # define parameters
+    # ----------------------------------------
     let
       system = "x86_64-linux"; # devlopment system architecture
       pkgs = nixpkgs.legacyPackages.${system};
@@ -55,6 +59,9 @@ for pkg in ${cross.gcc} ${cross.binutils}; do
 done
 '';
 
+      # ----------------------------------------
+      # Build packages
+      # ----------------------------------------
       onnxGraphsurgeon = pkgs.python3.pkgs.buildPythonPackage rec {
         pname = "onnx_graphsurgeon";
         version = "0.6.1";
@@ -67,15 +74,45 @@ done
           hash = "sha256-+rxT/GCQndAyz9iJAW3V1BOatWavSpA5ACgY9VLHNUc=";
         };
 
-        dependencies = with pkgs.python3.pkgs; [ numpy onnx];
+        dependencies = with pkgs.python3.pkgs; [ numpy onnx ];
         pythonImportsCheck = [ "onnx_graphsurgeon" ];
       };
 
+      deeployPulp = pkgs.python3.pkgs.buildPythonPackage rec {
+        pname = "deeploy_pulp";
+        version = "0.2.1";
+        format = "wheel";
+
+        src = pkgs.python3.pkgs.fetchPypi {
+          inherit pname version format;
+          dist = "py3";
+          python = "py3";
+          hash = "sha256-8835VQUsYibQbhXC3bGcQ+SwXKughov6TGn3nDXvT5M=";
+        };
+
+        pythonRelaxDeps = [ "numpy" "protobuf" "setuptools" ];
+        pythonRemoveDeps = [ "ortools" "plotly" "pytest" "pytest-xdist" "argparse" ];
+        dependencies = with pkgs.python3.pkgs; [ numpy protobuf setuptools onnx onnxruntime mako toml coloredlogs onnxGraphsurgeon ];
+        pythonImportsCheck = [ "Deeploy" ];
+      };
+
+      # ----------------------------------------
+      # declare devShells
+      # ----------------------------------------
     in with pkgs; {
       devShells.${system} = rec {
+        # default shell
         default = mkShell {
-          packages = basePackages ++[ (python3.withPackages (ps: basePython ps ++ [ onnxGraphsurgeon ])) ];
+          packages = basePackages ++ [ (python3.withPackages basePython) ];
           hardeningDisable = [ "all" ];
+          shellHook = commonHook;
+        };
+
+        # shell with deeploy (run with `nix develop .#deeploy`)
+        deeploy = mkShell {
+          packages = basePackages ++ [ (python3.withPackages
+            (ps: basePython ps ++ [ onnxGraphsurgeon deeployPulp ])) ];
+          hardeningDisable = ["all"];
           shellHook = commonHook;
         };
       };
