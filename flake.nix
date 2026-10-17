@@ -55,10 +55,26 @@ for pkg in ${cross.gcc} ${cross.binutils}; do
 done
 '';
 
+      onnxGraphsurgeon = pkgs.python3.pkgs.buildPythonPackage rec {
+        pname = "onnx_graphsurgeon";
+        version = "0.6.1";
+        format = "wheel";
+
+        src = pkgs.python3.pkgs.fetchPypi {
+          inherit pname version format;
+          dist = "py2.py3";
+          python = "py2.py3";
+          hash = "sha256-+rxT/GCQndAyz9iJAW3V1BOatWavSpA5ACgY9VLHNUc=";
+        };
+
+        dependencies = with pkgs.python3.pkgs; [ numpy onnx];
+        pythonImportsCheck = [ "onnx_graphsurgeon" ];
+      };
+
     in with pkgs; {
       devShells.${system} = rec {
         default = mkShell {
-          packages = basePackages ++ [ (python312.withPackages basePython) ];
+          packages = basePackages ++[ (python3.withPackages (ps: basePython ps ++ [ onnxGraphsurgeon ])) ];
           hardeningDisable = [ "all" ];
           shellHook = commonHook;
         };
