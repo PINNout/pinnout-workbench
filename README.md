@@ -49,6 +49,15 @@ nix flake --help # errors here mean flakes aren't enabled
 ```
 
 ### Using the environment
+
+#### Basic Usage
+
+> **Important note for entering flake for the first time:**
+> If you enter the flake for the first time, you will be asked to build LLVM (required for Spatz). This takes a very long time. By default, the number of jobs is set to 4, however if you have the RAM to spare, it is highly recommended to run with more jobs (rule of thumb is number of jobs = 0.5x available GiB of RAM). To do this enter the shell with this command:
+> ``` bash
+> LLVM_BUILD_JOBS=<number of jobs> nix develop
+> ```
+
 Once nix is setup, simply `cd` to the root of the project and run:
 ``` bash
 nix develop
@@ -56,9 +65,15 @@ nix develop
 
 This will install all required dependencies if they have not yet been installed.
 
-If it is the first time that you are entering the devShell, you will be prompted to set up the submodules, the Bender dependencies and the the GVSoC sources. There will be several GB worth of data to download, so expect it to take a while. 
+If it is the first time that you are entering the devShell, you will be prompted to set up the submodules, the Bender dependencies and theS GVSoC sources. There will be several GB worth of data to download, so expect it to take a while. 
 
 Similarly, you will also be asked whether you would like to build the simulators: `GVSoC` and the `Verilator` model of MAGIA. Note that the Verilator build process can take a long time and is very memory intensive.
+
+#### Using Deeploy
+To keep dependencies lighter-weight, a separate devShell has been created that adds the required dependencies for Deeploy. To enter this environment, `cd` to the root of the project and run:
+``` bash
+nix develop .#deeploy
+```
 
 ## Adjusting Workflow
 If you need to make any changes to the environment settings, or the configuration of the simulation runs, you can edit the `scripts/config.sh` file.
@@ -66,7 +81,7 @@ If you need to make any changes to the environment settings, or the configuratio
 Changing the parameters in this file requires building both the simulators and the binaries.
 
 ## Verifying it works
-To verify the environemnt is setup correctly and the simulators are behaving properly. Run from the project root:
+To verify the environemnt is set up correctly and the simulators are behaving properly, run from the project root:
 ```bash
 scripts/verify_setup.sh
 ```
@@ -74,6 +89,6 @@ scripts/verify_setup.sh
 This will run the same basic "Hello world" test on both simulators and compare that the outputs match.
 
 ## Known Limitations
-The ISA is temporarily reduced to omit `xcvhwlp`, `xcvmem` and `xcvbitmap` as the riscv64 gcc toolchain doesn't fully support these by default. 
+The ISA is temporarily reduced to omit `xcvhwlp`, `xcvmem` and `xcvbitmanip` as the riscv64 gcc toolchain doesn't fully support these by default. 
 
 
