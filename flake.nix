@@ -78,22 +78,33 @@ done
         pythonImportsCheck = [ "onnx_graphsurgeon" ];
       };
 
+
+      # Current magia-sdk depends on unrelesaed Deeploy version "am/magia-kernels-2"
       deeployPulp = pkgs.python3.pkgs.buildPythonPackage rec {
         pname = "deeploy_pulp";
         version = "0.2.1";
-        format = "wheel";
+        # format = "wheel";
+        pyproject = true;
+        build-system = with pkgs.python3.pkgs; [ setuptools wheel ];
 
-        src = pkgs.python3.pkgs.fetchPypi {
-          inherit pname version format;
-          dist = "py3";
-          python = "py3";
-          hash = "sha256-8835VQUsYibQbhXC3bGcQ+SwXKughov6TGn3nDXvT5M=";
+        src = pkgs.fetchFromGitHub {
+          owner = "FondazioneChipsIT";
+          repo = "Deeploy";
+          rev = "36e348548be5b6215e28db45b4b69d1fa2c3fd86";
+          hash = "sha256-WPkS2D1fjZ5ePssQiISSm/Z2kZQ0XrA+IPDjSeyBWMw=";
         };
+        
+        # src = pkgs.python3.pkgs.fetchPypi {
+        #   inherit pname version format;
+        #   dist = "py3";
+        #   python = "py3";
+        #   hash = "sha256-8835VQUsYibQbhXC3bGcQ+SwXKughov6TGn3nDXvT5M=";
+        # };
 
         pythonRelaxDeps = [ "numpy" "protobuf" "setuptools" ];
-        pythonRemoveDeps = [ "ortools" "plotly" "pytest" "pytest-xdist" "argparse" ];
-        dependencies = with pkgs.python3.pkgs; [ numpy protobuf setuptools onnx onnxruntime mako toml coloredlogs onnxGraphsurgeon ];
-        pythonImportsCheck = [ "Deeploy" ];
+        pythonRemoveDeps = [ "plotly" "pytest" "pytest-xdist" "argparse" ];
+        dependencies = with pkgs.python3.pkgs; [ numpy protobuf setuptools onnx onnxruntime mako toml coloredlogs onnxGraphsurgeon ortools ];
+        pythonImportsCheck = [ "Deeploy" "Deeploy.Targets.Generic.Layers" ];
       };
 
       # ----------------------------------------
