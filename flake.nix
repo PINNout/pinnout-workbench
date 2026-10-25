@@ -1,6 +1,11 @@
 {
   description = "PINNout encapsulated environment for compiler and hardware development for PINN training optimisation targeted at the MAGIA platform";
 
+  nixConfig = {
+    extra-substituters = [ "https://pinnout.cachix.org" ];
+    extra-trusted-public-keys = [ "pinnout.cachix.org-1:51YtDHyrWhyzFO9Q8TCzF5Fb0BNBu3s5t58ovErMsns=" ];
+  };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-26.05";
@@ -12,7 +17,7 @@
     # define parameters
     # ----------------------------------------
     let
-      system = "x86_64-linux"; # devlopment system architecture
+      system = "x86_64-linux"; # development system architecture
       pkgs = nixpkgs.legacyPackages.${system};
       pkgsStable = nixpkgs-stable.legacyPackages.${system};
 
@@ -46,8 +51,8 @@
 export MAGIA_RTL_DIR="$(git rev-parse --show-toplevel)/MAGIA"
 export MAKEFLAGS="SHELL=${pkgs.bash}/bin/bash"
 export NIX_ENFORCE_NO_NATIVE=0
-export GCC13=${pkgs.gcc13}
 unset OBJCOPY OBJDUMP
+export LLVM_INSTALL_DIR=${spatzLlvm}
 "$(git rev-parse --show-toplevel)/scripts/setup_env.sh"
 '';
 
@@ -80,7 +85,7 @@ done
       };
 
 
-      # Current magia-sdk depends on unrelesaed Deeploy version "am/magia-kernels-2"
+      # Current magia-sdk depends on unreleased Deeploy version "am/magia-kernels-2"
       deeployPulp = pkgs.python3.pkgs.buildPythonPackage rec {
         pname = "deeploy_pulp";
         version = "0.2.1";
@@ -108,6 +113,32 @@ done
         pythonImportsCheck = [ "Deeploy" "Deeploy.Targets.Generic.Layers" ];
       };
 
+      spatzLlvm = pkgs.gcc13Stdenv.mkDerivation{
+        pname = "spatz_llvm";
+        version = "14-b494f2d";
+
+        src = pkgs.fetchFromGitHub{
+          owner = "pulp-platform";
+          repo = "llvm-project";
+          rev = "b494f2d8dde88723026db8ec16ac6c7ee1e140ca";
+          hash = "sha256-BT6X8F0OKsSv4CyjiYuu7ZJVrZTiB38uaa0Id3BX/co=";
+        };
+
+        nativeBuildInputs = with pkgs; [ cmake ninja python3 ];
+        cmakeDir = "../llvm";
+        env.CXXFLAGS = "-include cstdint";
+        cmakeFlags = [ "-DLLVM_APPEND_VC_REV=OFF"
+                       "-DLLVM_PARALLEL_LINK_JOBS=2"
+                       "-DLLVM_OPTIMIZED_TABLEGEN=True"
+                       "-DLLVM_ENABLE_PROJECTS=clang;lld"
+                       "-DLLVM_TARGETS_TO_BUILD=RISCV"
+                       "-DLLVM_DEFAULT_TARGET_TRIPLE=riscv32-unknown-elf"
+                       "-DLLVM_ENABLE_LLD=False"
+                       "-DCMAKE_BUILD_TYPE=Release"
+                       "-DCMAKE_INSTALL_BINDIR=bin"
+                     ];
+      };
+
       # ----------------------------------------
       # declare devShells
       # ----------------------------------------
@@ -128,6 +159,7 @@ done
           shellHook = commonHook;
         };
       };
+      packages.${system}.spatz-llvm = spatzLlvm;
     };
 }
 

@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
-source scripts/config.sh 
-# This script should not be run manually. It is called by `mkShell` in the Nix Flake.
+source scripts/config.sh
 
 failed=0
 problems=0
 not_built=0
-llvm_built=0
 
 mode=check
 ask=yes
@@ -120,7 +118,6 @@ check_gvsoc() {
 check_builds() {
     local gvsoc_state=NOT_BUILT
     local verilator_state=NOT_BUILT
-    local spatzllvm_state=NOT_BUILT
 
     if [ -x magia-sdk/gvsoc/install/bin/gvrun ]; then
 	gvsoc_state=OK
@@ -137,15 +134,6 @@ check_builds() {
     fi
 
     report "Verilator" "$verilator_state"
-
-    if [ -x magia-sdk/llvm/install/bin/clang ]; then
-	spatzllvm_state=OK
-	llvm_built=1
-    else
-        llvm_built=0
-    fi
-
-    report "SPATZ LLVM" "$spatzllvm_state"
 }
 
 build_tests() {
@@ -155,18 +143,6 @@ build_tests() {
     fi
 
     if ! (cd MAGIA && make verilate mesh_dv=1); then
-	failed=1
-    fi
-
-    check_builds
-}
-
-build_llvm() {
-    mode=fix
-    if ! (cd magia-sdk &&  CXXFLAGS="-include cstdint" make llvm \
-				   LLVM_REPO=https://github.com/pulp-platform/llvm-project.git \
-				   LLVM_JOBS="$llvm_build_jobs" \
-				   CC="${GCC13:?}/bin/gcc" CXX="$GCC13/bin/g++"); then
 	failed=1
     fi
 
@@ -202,16 +178,6 @@ if [ "$not_built" -gt 0 ]; then
 	read -r -p "Build GVSoC and Verilator model now? (This may take a while) [y/N] " answer
 	case "$answer" in
 	    y|Y|yes) build_tests ;;
-	    *) ;;
-	esac
-    fi
-fi
-
-if [ "$llvm_built" -eq 0 ]; then
-    if [ "$ask" = "yes" ] && [ -t 0 ]; then
-	read -r -p "Build LLVM for Spatz now? (This may take a very long time) [y/N] " answer
-	case "$answer" in
-	    y|Y|yes) build_llvm ;;
 	    *) ;;
 	esac
     fi
