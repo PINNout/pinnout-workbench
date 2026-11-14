@@ -1,0 +1,4 @@
+experiment/*.c linguist-generated
+experiment/*.h linguist-generated
+experiment/*.mlir linguist-generated
+experiment/*.s linguist-generated
