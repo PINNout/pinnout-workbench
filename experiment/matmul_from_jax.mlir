@@ -1,0 +1,16 @@
+#loc1 = loc("m1")
+#loc2 = loc("m2")
+module @jit_matmul attributes {jax.uses_shape_polymorphism = false, mhlo.num_partitions = 1 : i32, mhlo.num_replicas = 1 : i32} {
+  func.func public @main(%arg0: tensor<16x16xf16> loc("m1"), %arg1: tensor<16x16xf16> loc("m2")) -> (tensor<16x16xf16> {jax.result_info = "result"}) {
+    %0 = stablehlo.dot_general %arg0, %arg1, contracting_dims = [1] x [0] : (tensor<16x16xf16>, tensor<16x16xf16>) -> tensor<16x16xf16> loc(#loc9)
+    return %0 : tensor<16x16xf16> loc(#loc8)
+  } loc(#loc)
+} loc(#loc)
+#loc = loc(unknown)
+#loc3 = loc("/home/luka/Code/PINNacle/pinnacle-workbench/experiment/matmul.py":11:11 to :26)
+#loc4 = loc("/home/luka/Code/PINNacle/pinnacle-workbench/experiment/matmul.py":16:20 to :53)
+#loc5 = loc("matmul"(#loc3))
+#loc6 = loc("<module>"(#loc4))
+#loc7 = loc(callsite(#loc5 at #loc6))
+#loc8 = loc("jit(matmul)"(#loc6))
+#loc9 = loc("jit(matmul)/dot_general"(#loc7))

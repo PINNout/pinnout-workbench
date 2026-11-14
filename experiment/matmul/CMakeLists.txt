@@ -1,0 +1,31 @@
+# Copyright 2024-2026 ETH Zurich, University of Bologna and Fondazione Chips-IT.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Moritz Scherer <scheremo@iis.ee.ethz.ch>
+# Philip Wiese <wiesep@iis.ee.ethz.ch>
+# Alberto Dequino <alberto.dequino@unibo.it>
+
+set(TEST_NAME matmul_mlir)
+
+file(GLOB_RECURSE TEST_SRCS
+  "src/*.c"
+)
+
+add_executable(${TEST_NAME} ${TEST_SRCS})
+target_include_directories(${TEST_NAME} PUBLIC
+  include
+  ${CMAKE_SOURCE_DIR}/kernels/common
+  ${CMAKE_SOURCE_DIR}/targets/${TARGET_PLATFORM}/include/utils
+)
+
+target_compile_options(${TEST_NAME}
+  PRIVATE
+  -O2
+)
+target_link_libraries(${TEST_NAME} PUBLIC runtime hal)
+
+add_custom_command(
+        TARGET ${TEST_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_OBJDUMP} -dhS -Mmarch=${ISA} $<TARGET_FILE:${TEST_NAME}> > $<TARGET_FILE:${TEST_NAME}>.s)
