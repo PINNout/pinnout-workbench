@@ -1,0 +1,4 @@
+*.c linguist-generated
+*.h linguist-generated
+*.mlir linguist-generated
+*.s linguist-generated

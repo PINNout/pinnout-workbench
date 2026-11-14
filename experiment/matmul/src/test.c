@@ -29,7 +29,7 @@ void sync() {
 
 int check_result(const uintptr_t output, const uintptr_t expected_output)
 {
-  return compare_fp16_bitwise(output, expected_output, 256);
+  return compare_fp16_bitwise(output, expected_output, C_expected_LEN);
 }
 
 int main() {
@@ -38,7 +38,7 @@ int main() {
   int hid;
   int ret;
 
-  uint16_t C[256];
+  uint16_t C[C_expected_LEN];
 
   hid = get_hartid();
 
