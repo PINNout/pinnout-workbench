@@ -2,16 +2,14 @@
 cd "$(git rev-parse --show-toplevel)"
 
 function_name=${1:?usage: $(basename "$0") <function_name>}
-path="experiment/$function_name/include"
+path="experiment/$function_name/"
 
-mkdir -p "$path"
+mkdir -p "$path/src"
+mkdir -p "$path/include"
 
 # lower JAX to C
+tmp=$(mktemp)
 {
-    if grep -q malloc "$path/$function_name.c"; then
-	printf '#include <stdlib.h>\n'
-    fi
-    printf '#include <stddef.h>\n#include <math.h>\n\n'
     stablehlo-opt "experiment/${function_name}_from_jax.mlir" \
         --stablehlo-legalize-to-linalg \
         --one-shot-bufferize="bufferize-function-boundaries buffer-alignment=0 function-boundary-type-conversion=identity-layout-map" \
@@ -24,9 +22,31 @@ mkdir -p "$path"
         --convert-math-to-emitc="language-target=c99" \
         --convert-to-emitc \
     | mlir-translate --mlir-to-cpp
-} > "$path/$function_name.c"
+} > "$tmp"
 
-sed -i "s/void main(/void $function_name(/" "$path/$function_name.c" # hacky fix - replace with proper pass later
+{
+    if grep -q malloc "$tmp"; then
+        printf '#include <stdlib.h>\n'
+    fi
+    printf '#include <stddef.h>\n#include <math.h>\n\n'
+    cat "$tmp"
+} > "$path/src/$function_name.c"
+rm "$tmp"
+
+sed -i "s/void main(/void $function_name(/" "$path/src/$function_name.c" # hacky fix - replace with proper pass later
+
+# Declaration header for the generated function: its first line, with " {" -> ";"
+{
+    printf '#pragma once\n#include <stddef.h>\n\n'
+    grep -m1 "^void ${function_name}(" "$path/src/$function_name.c" | sed 's/ {$/;/'
+} > "$path/include/$function_name.h"
+
+sed "s/@NAME@/$function_name/g" "experiment/templates/CMakeLists.txt.in" > "$path/CMakeLists.txt"
+
+sed "s/@NAME@/$function_name/g" "experiment/templates/test.c.in" > "$path/src/test.c"
+
+grep -qx "add_subdirectory($function_name)" experiment/CMakeLists.txt \
+  || echo "add_subdirectory($function_name)" >> experiment/CMakeLists.txt
 
 # compile with gcc
 # riscv64-unknown-elf-gcc \

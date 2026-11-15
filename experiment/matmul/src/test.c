@@ -1,4 +1,7 @@
-#include <stddef.h>
+// Test harness template. compile.sh replaces matmul and writes the result to
+// experiment/matmul/src/test.c. Everything test-specific (the call, the
+// arrays, the list of outputs) comes from the generated matmul_data.h.
+
 #include <stdint.h>
 
 #include "eventunit.h"
@@ -6,72 +9,48 @@
 #include "performance_utils.h"
 #include "tile.h"
 
-#include "kernels_compare_utils.h"
+#include "matmul_data.h" // run_kernel(), outputs[], NUM_OUTPUTS
 
-#include "matmul.c"
-#include "matmul_data.h"
-
-int init_fysnc() {
-  fsync_init();
-  return 0;
-}
-
-int init_event_unit() {
-  eu_init();
-  eu_fsync_init(0);
-  return 0;
-}
-
-void sync() {
-  fsync_sync_global();
-  eu_fsync_wait(WFE);
-}
-
-int check_result(const uintptr_t output, const uintptr_t expected_output)
+static void init(void)
 {
-  return compare_fp16_bitwise(output, expected_output, C_expected_LEN);
+    fsync_init();
+    eu_init();
+    eu_fsync_init(0);
 }
 
-int main() {
-  uint32_t cycle_start;
-  uint32_t cycle_stop;
-  int hid;
-  int ret;
+static void sync(void)
+{
+    fsync_sync_global();
+    eu_fsync_wait(WFE);
+}
 
-  uint16_t C[C_expected_LEN];
+int main(void)
+{
+    uint32_t cycle_start;
+    uint32_t cycle_stop;
+    int hid = get_hartid();
+    int mismatches = 0;
 
-  hid = get_hartid();
+    perf_init();
+    init();
+    sync();
 
-  perf_init();
+    // Single-tile test: only tile 0 computes, the others wait at the barriers.
+    if (hid == 0) {
+        cycle_start = perf_get_cycles();
+        run_kernel();
+        cycle_stop = perf_get_cycles();
+        printf("[CV32 (%d)] Run completed in %d cycles\n", hid, cycle_stop - cycle_start);
+    }
 
-  ret = init_fysnc();
-  if (ret) {
-    printf("[CV32 (%d)] Fsync initialization failed with errno: %d\n", HID, ret);
-    return ret;
-  }
+    sync();
 
-  ret = init_event_unit();
-  if (ret) {
-    printf("[CV32 (%d)] Event Unit initialization failed with errno: %d\n", HID, ret);
-    return ret;
-  }
+    if (hid == 0) {
+        for (int i = 0; i < NUM_OUTPUTS; i++)
+            mismatches += compare_output(&outputs[i]);
+        printf("[CV32] Test completed with %d mismatches\n", mismatches);
+    }
 
-  sync();
-
-  cycle_start = perf_get_cycles();
-  if (hid == 0)
-    matmul((_Float16 (*)[16])A, (_Float16 (*)[16])B, (_Float16 (*)[16])C);
-  cycle_stop = perf_get_cycles();
-
-  printf("[CV32 (%d)] Run completed in %d cycles\n", hid,
-         cycle_stop - cycle_start);
-  sync();
-
-  if (hid == 0) {
-    ret = check_result((const uintptr_t) C, (const uintptr_t) C_expected);
-    printf("[CV32] Test completed with %d mismatches\n", ret);
-  }
-
-  sync();
-  return ret;
+    sync();
+    return mismatches;
 }

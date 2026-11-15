@@ -8,7 +8,7 @@ module @jit_matmul attributes {jax.uses_shape_polymorphism = false, mhlo.num_par
 } loc(#loc)
 #loc = loc(unknown)
 #loc3 = loc("/home/luka/Code/PINNacle/pinnacle-workbench/experiment/matmul.py":19:11 to :26)
-#loc4 = loc("/home/luka/Code/PINNacle/pinnacle-workbench/experiment/testgen.py":26:21 to :55)
+#loc4 = loc("/home/luka/Code/PINNacle/pinnacle-workbench/experiment/testgen.py":38:21 to :55)
 #loc5 = loc("/home/luka/Code/PINNacle/pinnacle-workbench/experiment/matmul.py":29:4 to :77)
 #loc6 = loc("matmul"(#loc3))
 #loc7 = loc("export_mlir"(#loc4))

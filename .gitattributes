@@ -1,4 +1,3 @@
-experiment/**/*.c linguist-generated
-experiment/**/*.h linguist-generated
-experiment/**/*.mlir linguist-generated
+experiment/*/include/**       linguist-generated
+experiment/*_from_jax.mlir    linguist-generated
 experiment/**/*.s linguist-generated

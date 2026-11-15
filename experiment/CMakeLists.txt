@@ -1,1 +1,2 @@
 add_subdirectory(matmul)
+add_subdirectory(poisson_pinn_train)
