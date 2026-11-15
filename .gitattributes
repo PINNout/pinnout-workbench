@@ -1,3 +1,4 @@
-experiment/*/include/**       linguist-generated
+experiment/*/**       linguist-generated
+experiment/templates/** -linguist-generated
 experiment/*_from_jax.mlir    linguist-generated
 experiment/**/*.s linguist-generated
