@@ -2,7 +2,7 @@
 #pragma once
 #include <stdint.h>
 #include "compare.h"
-#include "matmul.h"
+#include "matmul_mlir.h"
 
 #define NUM_OUTPUTS 1
 
@@ -120,4 +120,4 @@ static const output_t outputs[NUM_OUTPUTS] = {
   { (void *)C, (void *)C_expected, C_expected_LEN, DT_F16 } 
 };
 
-static void run_kernel(void) { matmul((void *)A, (void *)B, (void *)C); }
+static void run_kernel(void) { matmul_mlir((void *)A, (void *)B, (void *)C); }

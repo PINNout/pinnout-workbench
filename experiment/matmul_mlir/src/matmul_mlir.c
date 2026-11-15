@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <math.h>
 
-void matmul(_Float16 v1[16][16], _Float16 v2[16][16], _Float16 v3[16][16]) {
+void matmul_mlir(_Float16 v1[16][16], _Float16 v2[16][16], _Float16 v3[16][16]) {
   _Float16 v4 = 0.0e+00f16;
   size_t v5 = 0;
   size_t v6 = 16;

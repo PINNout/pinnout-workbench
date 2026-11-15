@@ -1,6 +1,6 @@
-// Test harness template. compile.sh replaces matmul and writes the result to
-// experiment/matmul/src/test.c. Everything test-specific (the call, the
-// arrays, the list of outputs) comes from the generated matmul_data.h.
+// Test harness template. compile.sh replaces matmul_mlir and writes the result to
+// experiment/matmul_mlir/src/test.c. Everything test-specific (the call, the
+// arrays, the list of outputs) comes from the generated matmul_mlir_data.h.
 
 #include <stdint.h>
 
@@ -9,7 +9,7 @@
 #include "performance_utils.h"
 #include "tile.h"
 
-#include "matmul_data.h" // run_kernel(), outputs[], NUM_OUTPUTS
+#include "matmul_mlir_data.h" // run_kernel(), outputs[], NUM_OUTPUTS
 
 static void init(void)
 {

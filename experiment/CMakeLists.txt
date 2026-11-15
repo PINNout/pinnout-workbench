@@ -1,2 +1,3 @@
-add_subdirectory(matmul)
 add_subdirectory(poisson_pinn_train)
+add_subdirectory(matmul_mlir)
+add_subdirectory(matmul_redmule)

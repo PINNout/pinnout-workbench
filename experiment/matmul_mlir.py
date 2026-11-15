@@ -10,7 +10,7 @@ from jax import jit, random
 from pathlib import Path
 
 here = Path(__file__).resolve().parent
-out = here / "matmul" / "include" / "matmul_data.h"
+out = here / "matmul_mlir" / "include" / "matmul_mlir_data.h"
 
 
 # the exported function:
@@ -25,5 +25,5 @@ if __name__ == "__main__":
 
     inputs = {"A": m1, "B": m2}
 
-    write_data("matmul", inputs, {"C": C}, out)
-    export_mlir(matmul, list(inputs.values()), here / "matmul_from_jax.mlir")
+    write_data("matmul_mlir", inputs, {"C": C}, out)
+    export_mlir(matmul, list(inputs.values()), here / "matmul_mlir_from_jax.mlir")
