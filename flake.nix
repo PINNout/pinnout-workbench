@@ -9,9 +9,10 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-26.05";
+    pinc.url = "github:pinnout/pinc";
   };
 
-  outputs = { nixpkgs, nixpkgs-stable, ... }:
+  outputs = { nixpkgs, nixpkgs-stable, pinc, ... }:
 
     # ----------------------------------------
     # define parameters
@@ -19,6 +20,7 @@
     let
       system = "x86_64-linux"; # development system architecture
       pkgs = nixpkgs.legacyPackages.${system};
+      pincPkgs = pinc.packages.${system};
       pkgsStable = nixpkgs-stable.legacyPackages.${system};
 
       cross = pkgs.pkgsCross.riscv64-embedded.buildPackages;
@@ -41,8 +43,9 @@
         lz4
         shellcheck
         pkgsStable.bender
-        stablehlo
-        stablehloMlir
+        pincPkgs.pinc-opt
+        pincPkgs.stablehlo
+        pincPkgs.stablehlo-mlir
       ];
 
       basePython = ps: [
@@ -144,64 +147,6 @@ done
                      ];
       };
 
-      stablehloMlir = pkgs.stdenv.mkDerivation{
-        pname= "stablehlo_mlir";
-        version="23-aab5db6";
-
-        src = pkgs.fetchFromGitHub{
-          owner = "llvm";
-          repo = "llvm-project";
-          rev = "aab5db6ab0702d190dbf0f3f7407d87f570c44f6";
-          hash = "sha256-Jg+f+5BWQknyYCU4RAEFbuVsiKOOy7ZCS/wnmymJC60=";
-        };
-
-        nativeBuildInputs = with pkgs; [ cmake ninja python3 ];
-        cmakeDir = "../llvm";
-        cmakeFlags = [ "-DLLVM_INSTALL_UTILS=ON"
-                       "-DLLVM_ENABLE_LLD=OFF" 
-                       "-DLLVM_ENABLE_PROJECTS=mlir"
-                       "-DLLVM_TARGETS_TO_BUILD=host"
-                       "-DLLVM_INCLUDE_TOOLS=ON"
-                       "-DLLVM_ENABLE_BINDINGS=OFF"
-                       "-DLLVM_VERSION_SUFFIX="
-                       "-DCMAKE_PLATFORM_NO_VERSIONED_SONAME:BOOL=ON"
-                       "-DLLVM_BUILD_TOOLS=ON"
-                       "-DLLVM_INCLUDE_TESTS=OFF"
-                       "-DLLVM_USE_SPLIT_DWARF=ON"
-                       "-DLLVM_ENABLE_ASSERTIONS=ON"
-                       "-DLLVM_INCLUDE_BENCHMARKS=OFF"
-                     ];
-      };
-
-      stablehlo = pkgs.stdenv.mkDerivation {
-        pname = "stablehlo";
-        version = "1-9fe4a1e";
-
-        src = pkgs.fetchFromGitHub {
-          owner = "openxla";
-          repo = "stablehlo";
-          rev = "9fe4a1e9cedbe466af2d620c2fcf87459df32eb6";
-          hash = "sha256-XCgvsgxO7/Efgl58Af+eRKJi6CKeLqDIwklL/Fc6N94=";
-        };
-        
-        nativeBuildInputs = with pkgs; [ cmake ninja python3 ];
-
-        cmakeFlags = [
-          "-DLLVM_ENABLE_ASSERTIONS=ON"
-          "-DSTABLEHLO_ENABLE_BINDINGS_PYTHON=OFF"
-          "-DMLIR_DIR=${stablehloMlir}/lib/cmake/mlir"
-        ];
-
-        # Only needed if StableHLO's CMake has no install() rule for its tools.
-        # The cmake hook runs this from inside the build directory.
-        installPhase = ''
-    runHook preInstall
-    install -Dm755 bin/stablehlo-opt       $out/bin/stablehlo-opt
-    install -Dm755 bin/stablehlo-translate $out/bin/stablehlo-translate
-    runHook postInstall
-  '';
-      };
-
       # ----------------------------------------
       # declare devShells
       # ----------------------------------------
@@ -224,8 +169,6 @@ done
       };
       packages.${system} = {
         spatz-llvm = spatzLlvm;
-        stablehlo-mlir = stablehloMlir;
-        stablehlo = stablehlo;
       };
     };
 }

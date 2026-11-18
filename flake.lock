@@ -32,10 +32,45 @@
         "type": "github"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1791956154,
+        "narHash": "sha256-jBYGPi4udQ9uo4KQp9m2J0546nJVQitG15gvZSaVVAs=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "55bfb4d7437bd4e09ab7cba58a43bd68eb310044",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "55bfb4d7437bd4e09ab7cba58a43bd68eb310044",
+        "type": "github"
+      }
+    },
+    "pinc": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1795034818,
+        "narHash": "sha256-rsAZiNPU4irnD5u+E9unqTlmEsi16Q75YVfUpJVBASE=",
+        "owner": "pinnout",
+        "repo": "pinc",
+        "rev": "c6d2b6afa9d1ab16a24e6e236e30ede90b835944",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pinnout",
+        "repo": "pinc",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
-        "nixpkgs-stable": "nixpkgs-stable"
+        "nixpkgs-stable": "nixpkgs-stable",
+        "pinc": "pinc"
       }
     }
   },
